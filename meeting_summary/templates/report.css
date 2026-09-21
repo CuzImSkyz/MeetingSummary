@@ -1,0 +1,16 @@
+@page {
+  size: A4;
+  margin: 20mm;
+}
+
+body {
+  color: #202124;
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+}
+
+h1,
+h2 {
+  color: #1f4e79;
+}
