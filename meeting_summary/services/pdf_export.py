@@ -1,11 +1,11 @@
-"""PDF-Ausgabe mit WeasyPrint."""
+"""PDF-Ausgabe mit ReportLab."""
 
 from pathlib import Path
 
 from ..models import MeetingProtocol
 
 
-class WeasyPrintExporter:
+class ReportLabExporter:
     def export(self, protocol: MeetingProtocol, target_path: Path) -> Path:
-        """Rendert künftig das HTML-Template als PDF."""
+        """Erzeugt künftig ein formatiertes PDF-Dokument."""
         raise NotImplementedError
