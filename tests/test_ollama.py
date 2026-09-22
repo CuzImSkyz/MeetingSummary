@@ -202,6 +202,26 @@ def test_chat_returns_content_from_complete_response() -> None:
     )
 
 
+def test_chat_includes_generation_options_when_provided() -> None:
+    response = Mock(spec=requests.Response)
+    response.json.return_value = {
+        "done": True,
+        "message": {"role": "assistant", "content": "{}"},
+    }
+    session = Mock(spec=requests.Session)
+    session.request.return_value = response
+    client = OllamaClient(config=AppConfig(), session=session)
+
+    client.chat(
+        messages=({"role": "user", "content": "Test"},),
+        response_schema={"type": "object"},
+        options={"temperature": 0},
+    )
+
+    request_body = session.request.call_args.kwargs["json"]
+    assert request_body["options"] == {"temperature": 0}
+
+
 @pytest.mark.parametrize(
     "payload",
     (
