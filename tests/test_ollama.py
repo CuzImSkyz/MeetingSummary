@@ -149,3 +149,91 @@ def test_list_models_rejects_invalid_response_structure(payload: object) -> None
         match="ungültige Modellliste",
     ):
         client.list_models()
+
+
+def test_chat_returns_content_from_complete_response() -> None:
+    response = Mock(spec=requests.Response)
+    response.json.return_value = {
+        "done": True,
+        "message": {
+            "role": "assistant",
+            "content": '{"short_summary":"Test"}',
+        },
+    }
+
+    session = Mock(spec=requests.Session)
+    session.request.return_value = response
+
+    client = OllamaClient(
+        config=AppConfig(),
+        session=session,
+    )
+    messages = (
+        {"role": "system", "content": "Erzeuge strukturiertes JSON."},
+        {"role": "user", "content": "Fasse das Meeting zusammen."},
+    )
+    response_schema = {
+        "type": "object",
+        "properties": {
+            "short_summary": {"type": "string"},
+        },
+        "required": ["short_summary"],
+    }
+
+    result = client.chat(
+        messages=messages,
+        response_schema=response_schema,
+    )
+
+    assert result == '{"short_summary":"Test"}'
+    session.request.assert_called_once_with(
+        method="POST",
+        url="http://localhost:11434/api/chat",
+        timeout=600.0,
+        json={
+            "model": "llama3:8b-instruct-q4_K_M",
+            "messages": [
+                {"role": "system", "content": "Erzeuge strukturiertes JSON."},
+                {"role": "user", "content": "Fasse das Meeting zusammen."},
+            ],
+            "stream": False,
+            "format": response_schema,
+        },
+    )
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        None,
+        {},
+        {"done": False, "message": {"content": "unvollständig"}},
+        {"done": True},
+        {"done": True, "message": None},
+        {"done": True, "message": []},
+        {"done": True, "message": {}},
+        {"done": True, "message": {"content": None}},
+        {"done": True, "message": {"content": ""}},
+        {"done": True, "message": {"content": "   "}},
+    ),
+)
+def test_chat_rejects_incomplete_response(payload: object) -> None:
+    response = Mock(spec=requests.Response)
+    response.json.return_value = payload
+
+    session = Mock(spec=requests.Session)
+    session.request.return_value = response
+
+    client = OllamaClient(
+        config=AppConfig(),
+        session=session,
+    )
+
+    with pytest.raises(
+        OllamaResponseError,
+        match="keine vollständige Chat-Antwort",
+    ):
+        client.chat(
+            messages=({"role": "user", "content": "Test"},),
+            response_schema={"type": "object"},
+        )
