@@ -34,6 +34,7 @@ class OllamaClient:
         self,
         messages: Sequence[Mapping[str, str]],
         response_schema: Mapping[str, object],
+        options: Mapping[str, object] | None = None,
     ) -> str:
         json_body: dict[str, object] = {
             "model": self._model,
@@ -41,6 +42,8 @@ class OllamaClient:
             "stream": False,
             "format": dict(response_schema),
         }
+        if options is not None:
+            json_body["options"] = dict(options)
         payload = self._request_json(
             method="POST",
             endpoint="/api/chat",

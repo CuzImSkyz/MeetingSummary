@@ -15,3 +15,7 @@ class OllamaConnectionError(InfrastructureError):
 
 class OllamaResponseError(InfrastructureError):
     """Die Ollama-API hat eine fehlerhafte Antwort geliefert."""
+
+
+class SummarizationError(MeetingSummaryError):
+    """Die Modellantwort konnte nicht in ein Protokoll umgewandelt werden."""
