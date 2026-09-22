@@ -23,7 +23,7 @@ def test_list_models_returns_names_from_api_response() -> None:
     }
 
     session = Mock(spec=requests.Session)
-    session.get.return_value = response
+    session.request.return_value = response
 
     client = OllamaClient(config=AppConfig(), session=session)
     result = client.list_models()
@@ -33,9 +33,11 @@ def test_list_models_returns_names_from_api_response() -> None:
         "gemma3:4b",
     )
 
-    session.get.assert_called_once_with(
-        "http://localhost:11434/api/tags",
+    session.request.assert_called_once_with(
+        method="GET",
+        url="http://localhost:11434/api/tags",
         timeout=5.0,
+        json=None,
     )
     response.raise_for_status.assert_called_once_with()
 
@@ -51,7 +53,7 @@ def test_list_models_translates_connection_failures(
     request_error: requests.RequestException,
 ) -> None:
     session = Mock(spec=requests.Session)
-    session.get.side_effect = request_error
+    session.request.side_effect = request_error
 
     client = OllamaClient(
         config=AppConfig(),
@@ -64,9 +66,11 @@ def test_list_models_translates_connection_failures(
     ):
         client.list_models()
 
-    session.get.assert_called_once_with(
-        "http://localhost:11434/api/tags",
+    session.request.assert_called_once_with(
+        method="GET",
+        url="http://localhost:11434/api/tags",
         timeout=5.0,
+        json=None,
     )
 
 
@@ -77,7 +81,7 @@ def test_list_models_translates_http_error() -> None:
     )
 
     session = Mock(spec=requests.Session)
-    session.get.return_value = response
+    session.request.return_value = response
 
     client = OllamaClient(
         config=AppConfig(),
@@ -99,7 +103,7 @@ def test_list_models_translates_invalid_json() -> None:
     response.json.side_effect = ValueError("Ungültiges JSON")
 
     session = Mock(spec=requests.Session)
-    session.get.return_value = response
+    session.request.return_value = response
 
     client = OllamaClient(
         config=AppConfig(),
@@ -133,7 +137,7 @@ def test_list_models_rejects_invalid_response_structure(payload: object) -> None
     response.json.return_value = payload
 
     session = Mock(spec=requests.Session)
-    session.get.return_value = response
+    session.request.return_value = response
 
     client = OllamaClient(
         config=AppConfig(),
