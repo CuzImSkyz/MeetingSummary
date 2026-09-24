@@ -19,3 +19,7 @@ class OllamaResponseError(InfrastructureError):
 
 class SummarizationError(MeetingSummaryError):
     """Die Modellantwort konnte nicht in ein Protokoll umgewandelt werden."""
+
+
+class TranscriptionError(MeetingSummaryError):
+    """Die Audiodatei konnte nicht transkribiert werden."""
