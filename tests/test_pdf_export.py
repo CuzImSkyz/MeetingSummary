@@ -25,7 +25,7 @@ def test_export_creates_valid_pdf_file(tmp_path: Path) -> None:
     assert result_path.read_bytes().startswith(b"%PDF-")
 
 
-def test_export_supports_topics_and_todos(tmp_path: Path) -> None:
+def test_export_supports_people_topics_and_todos(tmp_path: Path) -> None:
     protocol = MeetingProtocol(
         short_summary="Der Release wurde besprochen",
         topics=(
@@ -43,6 +43,10 @@ def test_export_supports_topics_and_todos(tmp_path: Path) -> None:
                 assignee="Anna & Bob",
             ),
             TodoItem(task="Termin planen"),
+        ),
+        mentioned_people=(
+            "Anna & Bob",
+            "Clara <Muster>",
         ),
     )
 

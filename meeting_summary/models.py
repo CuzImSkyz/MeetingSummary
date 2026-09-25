@@ -38,3 +38,4 @@ class MeetingProtocol:
     short_summary: str
     topics: tuple[TopicSection, ...]
     todos: tuple[TodoItem, ...] = ()
+    mentioned_people: tuple[str, ...] = ()

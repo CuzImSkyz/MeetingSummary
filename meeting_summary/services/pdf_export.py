@@ -61,6 +61,29 @@ class ReportLabExporter:
                     styles["BodyText"],
                 ),
             ]
+            if protocol.mentioned_people:
+                story.extend(
+                    [
+                        Spacer(1, 6 * mm),
+                        Paragraph(
+                            "Genannte Personen",
+                            styles["Heading2"],
+                        ),
+                        ListFlowable(
+                            [
+                                ListItem(
+                                    Paragraph(
+                                        escape(person),
+                                        styles["BodyText"],
+                                    )
+                                )
+                                for person in protocol.mentioned_people
+                            ],
+                            bulletType="bullet",
+                            leftIndent=6 * mm,
+                        ),
+                    ]
+                )
 
             if protocol.topics:
                 story.extend(

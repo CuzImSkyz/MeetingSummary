@@ -29,6 +29,7 @@ def test_summarize_maps_json_response_to_protocol() -> None:
                 ]
             }
         ],
+        "mentioned_people": ["Anna", " Anna ", "Ben"],
         "todos": [
             {
                 "task": "Release Notes erstellen",
@@ -64,6 +65,7 @@ def test_summarize_maps_json_response_to_protocol() -> None:
                 assignee="Anna",
             ),
         ),
+        mentioned_people=("Anna", "Ben"),
     )
 
 
@@ -73,6 +75,7 @@ def test_summarize_sends_transcript_and_complete_schema() -> None:
     {
         "short_summary": "Kurze Zusammenfassung.",
         "topics": [],
+        "mentioned_people": [],
         "todos": []
     }
     """
@@ -94,10 +97,18 @@ def test_summarize_sends_transcript_and_complete_schema() -> None:
         "content": "Besprochener Inhalt.",
     }
     assert "ausschließlich aus dem bereitgestellten Transkript" in system_prompt
-    assert schema["required"] == ["short_summary", "topics", "todos"]
+    assert schema["required"] == [
+        "short_summary",
+        "topics",
+        "mentioned_people",
+        "todos",
+    ]
     assert schema["additionalProperties"] is False
     assert schema["properties"]["topics"]["type"] == "array"
     assert schema["properties"]["todos"]["type"] == "array"
+    assert schema["properties"]["mentioned_people"]["type"] == "array"
+    assert "mentioned_people:" in system_prompt
+    assert "vermuteten Teilnehmer" in system_prompt
 
 
 def test_summarize_accepts_todo_without_assignee() -> None:
@@ -106,6 +117,7 @@ def test_summarize_accepts_todo_without_assignee() -> None:
     {
         "short_summary": "Eine Aufgabe wurde vereinbart.",
         "topics": [],
+        "mentioned_people": [],
         "todos": [
             {
                 "task": "Protokoll versenden",
@@ -130,27 +142,64 @@ def test_summarize_accepts_todo_without_assignee() -> None:
     [
         "kein JSON",
         "[]",
-        '{"short_summary": null, "topics": [], "todos": []}',
-        '{"short_summary": "Text", "topics": {}, "todos": []}',
-        '{"short_summary": "Text", "topics": [], "todos": {}}',
-        '{"short_summary": "Text", "topics": [null], "todos": []}',
-        '{"short_summary": "Text", "topics": [{}], "todos": []}',
         (
-            '{"short_summary": "Text", "topics": '
-            '[{"title": "Thema", "bullet_points": {}}], "todos": []}'
+            '{"short_summary": null, "topics": [], '
+            '"mentioned_people": [], "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": {}, '
+            '"mentioned_people": [], "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": {}, "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [1], "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [], "todos": {}}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [null], '
+            '"mentioned_people": [], "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [{}], '
+            '"mentioned_people": [], "todos": []}'
         ),
         (
             '{"short_summary": "Text", "topics": '
-            '[{"title": "Thema", "bullet_points": [1]}], "todos": []}'
+            '[{"title": "Thema", "bullet_points": {}}], '
+            '"mentioned_people": [], "todos": []}'
         ),
-        '{"short_summary": "Text", "topics": [], "todos": [null]}',
-        '{"short_summary": "Text", "topics": [], "todos": [{}]}',
         (
-            '{"short_summary": "Text", "topics": [], "todos": '
+            '{"short_summary": "Text", "topics": '
+            '[{"title": "Thema", "bullet_points": [1]}], '
+            '"mentioned_people": [], "todos": []}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [], "todos": [null]}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [], "todos": [{}]}'
+        ),
+        (
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [], "todos": '
             '[{"task": "Aufgabe"}]}'
         ),
         (
-            '{"short_summary": "Text", "topics": [], "todos": '
+            '{"short_summary": "Text", "topics": [], '
+            '"mentioned_people": [], "todos": '
             '[{"task": "Aufgabe", "assignee": 42}]}'
         ),
     ],

@@ -20,6 +20,13 @@ topics:
 - Erzeuge keine Themen über Felder, Metadaten, fehlende Personen oder fehlende
   Termine.
 
+mentioned_people:
+- Liste jede ausdrücklich im Transkript genannte natürliche Person höchstens
+  einmal.
+- Übernimm Namen in der im Transkript verwendeten Form.
+- Erfasse keine Rollen, Teams, Firmen oder vermuteten Teilnehmer als Personen.
+- Verwende eine leere Liste, wenn keine Person ausdrücklich genannt wird.
+
 todos:
 - Erfasse jede ausdrücklich vereinbarte oder geforderte Handlung genau einmal.
 - Formuliere task als konkrete Handlung.
@@ -47,6 +54,10 @@ _PROTOCOL_SCHEMA: dict[str, object] = {
                 "additionalProperties": False,
             },
         },
+        "mentioned_people": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
         "todos": {
             "type": "array",
             "items": {
@@ -60,7 +71,12 @@ _PROTOCOL_SCHEMA: dict[str, object] = {
             },
         },
     },
-    "required": ["short_summary", "topics", "todos"],
+    "required": [
+        "short_summary",
+        "topics",
+        "mentioned_people",
+        "todos",
+    ],
     "additionalProperties": False,
 }
 
@@ -101,12 +117,18 @@ def _parse_protocol(raw_response: str) -> MeetingProtocol:
 
     short_summary = data.get("short_summary")
     topics_data = data.get("topics")
+    mentioned_people_data = data.get("mentioned_people")
     todos_data = data.get("todos")
 
     if not isinstance(short_summary, str):
         raise SummarizationError(error_message)
     if not isinstance(topics_data, list):
         raise SummarizationError(error_message)
+    if not isinstance(mentioned_people_data, list):
+        raise SummarizationError(error_message)
+    for person in mentioned_people_data:
+        if not isinstance(person, str):
+            raise SummarizationError(error_message)
     if not isinstance(todos_data, list):
         raise SummarizationError(error_message)
 
@@ -149,8 +171,17 @@ def _parse_protocol(raw_response: str) -> MeetingProtocol:
         for todo in data["todos"]
     )
 
+    mentioned_people = tuple(
+        dict.fromkeys(
+            person.strip()
+            for person in mentioned_people_data
+            if person.strip()
+        )
+    )
+
     return MeetingProtocol(
         short_summary=short_summary,
         topics=topics,
+        mentioned_people=mentioned_people,
         todos=todos,
     )
