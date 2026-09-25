@@ -23,3 +23,7 @@ class SummarizationError(MeetingSummaryError):
 
 class TranscriptionError(MeetingSummaryError):
     """Die Audiodatei konnte nicht transkribiert werden."""
+
+
+class PdfExportError(MeetingSummaryError):
+    """Das Meeting-Protokoll konnte nicht als PDF gespeichert werden."""
