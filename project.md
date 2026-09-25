@@ -1,5 +1,9 @@
 # Projekt-Dokumentation: Offline Meeting-Protokoll-Generator
 
+> Das aktuelle Zielbild und die priorisierte Weiterentwicklung stehen in
+> [`docs/roadmap.md`](docs/roadmap.md). Dieses Dokument beschreibt den
+> ursprünglichen technischen Ausgangspunkt und wird schrittweise angeglichen.
+
 ## 1. Projektübersicht
 Ein lokales, datenschutzkonformes Tool zur automatisierten Transkription und strukturierten Zusammenfassung von Meetings. Die Anwendung arbeitet vollständig offline auf der CPU und exportiert die Ergebnisse als formatiertes PDF-Dokument.
 
