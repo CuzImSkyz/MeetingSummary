@@ -8,7 +8,10 @@ import pytest
 
 from meeting_summary import cli
 from meeting_summary.config import AppConfig
-from meeting_summary.exceptions import TranscriptionError
+from meeting_summary.exceptions import (
+    OllamaModelNotInstalledError,
+    TranscriptionError,
+)
 from meeting_summary.pipeline import MeetingPipeline
 
 
@@ -97,3 +100,38 @@ def test_main_reports_expected_application_error(
     assert captured.err.strip() == (
         f"Fehler: Audiodatei wurde nicht gefunden: {audio_path}"
     )
+
+
+def test_main_reports_infrastructure_error_during_startup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    audio_path = tmp_path / "meeting.mp3"
+    error_message = (
+        "Ollama-Modell 'required-model' ist nicht installiert."
+    )
+    build_pipeline = Mock(
+        side_effect=OllamaModelNotInstalledError(
+            error_message
+        )
+    )
+
+    monkeypatch.setattr(
+        cli,
+        "build_pipeline",
+        build_pipeline,
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["meeting_summary", str(audio_path)],
+    )
+
+    exit_code = cli.main()
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    build_pipeline.assert_called_once_with(AppConfig())
+    assert captured.out == ""
+    assert captured.err.strip() == f"Fehler: {error_message}"

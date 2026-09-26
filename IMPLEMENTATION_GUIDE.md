@@ -49,6 +49,7 @@ Abgeschlossen und getestet:
 
 - unveränderliche Domänenmodelle;
 - robuster Ollama-HTTP-Client;
+- produktive Prüfung von Ollama und konfiguriertem Modell;
 - strukturierte Meetingzusammenfassung;
 - Extraktion ausdrücklich genannter Personen;
 - Whisper-Transkription mit optionalen Hotwords;
@@ -58,7 +59,6 @@ Abgeschlossen und getestet:
 
 Noch offen:
 
-- produktive Infrastrukturprüfung für Ollama und das konfigurierte Modell;
 - optionaler Ausgabepfad und Fortschrittsmeldungen;
 - Desktop-Oberfläche und Hintergrundverarbeitung;
 - Persistenz, Sprecherdiarisierung und RAG;
@@ -333,22 +333,16 @@ Vor der Zielrechner-Verteilung testen:
 
 ## Nächster konkreter Schritt
 
-Implementiere die produktive Ollama-Infrastrukturprüfung in
-`meeting_summary/services/infrastructure.py`.
+Erweitere die CLI um einen optionalen Ausgabepfad `--output`.
 
-Sie soll:
+Dabei gelten folgende Regeln:
 
-- `OllamaClient.list_models()` verwenden;
-- das konfigurierte Modell exakt prüfen;
-- bei fehlendem Modell einen verständlichen projektspezifischen Fehler melden;
-- Ollama weder automatisch installieren noch starten;
-- vollständig mit Mocks testbar bleiben.
+- Ohne `--output` bleibt der bisherige Pfad neben der Audiodatei erhalten.
+- Ein angegebener Ausgabepfad wird an die Pipeline weitergereicht.
+- Der ReportLab-Adapter normalisiert die Dateiendung weiterhin auf `.pdf`.
+- CLI-Tests laden weder Whisper noch Ollama.
 
 Zugehörige Dateien:
 
-- `meeting_summary/services/infrastructure.py`
-- `meeting_summary/exceptions.py`
-- `tests/test_infrastructure.py`
-
-Danach wird entschieden, ob die Prüfung bei jedem Lauf oder über eine separate
-CLI-Option `--check` ausgelöst wird.
+- `meeting_summary/cli.py`
+- `tests/test_cli.py`

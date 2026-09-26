@@ -8,7 +8,7 @@ from meeting_summary import bootstrap
 from meeting_summary.config import AppConfig
 
 
-def test_build_pipeline_wires_configured_adapters(
+def test_build_pipeline_checks_infrastructure_before_whisper(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = AppConfig(
@@ -17,15 +17,28 @@ def test_build_pipeline_wires_configured_adapters(
             "Release Notes",
         )
     )
+    events: list[str] = []
 
     transcriber = Mock(name="transcriber")
+    infrastructure_checker = Mock(name="infrastructure_checker")
     meeting_time_resolver = Mock(name="meeting_time_resolver")
     ollama_client = Mock(name="ollama_client")
     summarizer = Mock(name="summarizer")
     pdf_exporter = Mock(name="pdf_exporter")
     pipeline = Mock(name="pipeline")
 
-    transcriber_factory = Mock(return_value=transcriber)
+    def create_transcriber(_: AppConfig) -> Mock:
+        events.append("transcriber")
+        return transcriber
+
+    def check_infrastructure() -> None:
+        events.append("check")
+
+    transcriber_factory = Mock(side_effect=create_transcriber)
+    infrastructure_checker.check.side_effect = check_infrastructure
+    infrastructure_checker_factory = Mock(
+        return_value=infrastructure_checker
+    )
     meeting_time_resolver_factory = Mock(
         return_value=meeting_time_resolver
     )
@@ -38,6 +51,11 @@ def test_build_pipeline_wires_configured_adapters(
         bootstrap,
         "WhisperTranscriber",
         transcriber_factory,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "InfrastructureChecker",
+        infrastructure_checker_factory,
     )
     monkeypatch.setattr(
         bootstrap,
@@ -68,9 +86,14 @@ def test_build_pipeline_wires_configured_adapters(
     result = bootstrap.build_pipeline(config)
 
     assert result is pipeline
+    ollama_client_factory.assert_called_once_with(config)
+    infrastructure_checker_factory.assert_called_once_with(
+        config=config,
+        client=ollama_client,
+    )
+    infrastructure_checker.check.assert_called_once_with()
     transcriber_factory.assert_called_once_with(config)
     meeting_time_resolver_factory.assert_called_once_with()
-    ollama_client_factory.assert_called_once_with(config)
     summarizer_factory.assert_called_once_with(ollama_client)
     pdf_exporter_factory.assert_called_once_with()
     pipeline_factory.assert_called_once_with(
@@ -79,3 +102,7 @@ def test_build_pipeline_wires_configured_adapters(
         summarizer=summarizer,
         pdf_exporter=pdf_exporter,
     )
+    assert events == [
+        "check",
+        "transcriber",
+    ]

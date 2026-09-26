@@ -17,6 +17,10 @@ class OllamaResponseError(InfrastructureError):
     """Die Ollama-API hat eine fehlerhafte Antwort geliefert."""
 
 
+class OllamaModelNotInstalledError(InfrastructureError):
+    """Das konfigurierte Ollama-Modell ist lokal nicht installiert."""
+
+
 class SummarizationError(MeetingSummaryError):
     """Die Modellantwort konnte nicht in ein Protokoll umgewandelt werden."""
 

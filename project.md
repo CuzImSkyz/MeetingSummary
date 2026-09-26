@@ -13,6 +13,7 @@ Die Anwendung kann:
 
 - lokale WAV- und MP3-Dateien mit `faster-whisper` transkribieren;
 - wiederholbare `--hotword`-Optionen für Namen und Fachbegriffe verwenden;
+- vor der Verarbeitung Ollama und das konfigurierte Modell prüfen;
 - Datum und Uhrzeit aus eingebetteten Audiometadaten übernehmen;
 - ohne verwertbare Zeitmetadaten die aktuelle Verarbeitungszeit verwenden;
 - Transkripte über ein lokal laufendes Ollama-Modell zusammenfassen;
