@@ -17,7 +17,27 @@ from reportlab.platypus import (
 )
 
 from ..exceptions import PdfExportError
-from ..models import MeetingProtocol
+from ..models import (
+    MeetingProtocol,
+    MeetingTime,
+    MeetingTimeSource,
+)
+
+
+_MEETING_TIME_SOURCE_LABELS = {
+    MeetingTimeSource.EMBEDDED_METADATA: "Audiodatei-Metadaten",
+    MeetingTimeSource.PROCESSING_TIME: "Verarbeitungszeit (Fallback)",
+}
+
+
+def _format_meeting_time(meeting_time: MeetingTime) -> str:
+    raw_offset = meeting_time.value.strftime("%z")
+    formatted_offset = f"{raw_offset[:3]}:{raw_offset[3:]}"
+
+    return (
+        f"{meeting_time.value:%d.%m.%Y, %H:%M} Uhr "
+        f"(UTC{formatted_offset})"
+    )
 
 
 class _Checkbox(Flowable):
@@ -54,13 +74,37 @@ class ReportLabExporter:
             )
             story = [
                 Paragraph("Meeting-Protokoll", styles["Title"]),
-                Spacer(1, 6 * mm),
-                Paragraph("Kurzfassung", styles["Heading2"]),
-                Paragraph(
-                    escape(protocol.short_summary),
-                    styles["BodyText"],
-                ),
             ]
+            if protocol.meeting_time is not None:
+                source_label = _MEETING_TIME_SOURCE_LABELS[
+                    protocol.meeting_time.source
+                ]
+                story.extend(
+                    [
+                        Spacer(1, 2 * mm),
+                        Paragraph(
+                            (
+                                "<b>Datum und Uhrzeit:</b> "
+                                f"{_format_meeting_time(protocol.meeting_time)}"
+                            ),
+                            styles["BodyText"],
+                        ),
+                        Paragraph(
+                            f"<b>Zeitquelle:</b> {source_label}",
+                            styles["BodyText"],
+                        ),
+                    ]
+                )
+            story.extend(
+                [
+                    Spacer(1, 6 * mm),
+                    Paragraph("Kurzfassung", styles["Heading2"]),
+                    Paragraph(
+                        escape(protocol.short_summary),
+                        styles["BodyText"],
+                    ),
+                ]
+            )
             if protocol.mentioned_people:
                 story.extend(
                     [

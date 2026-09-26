@@ -1,12 +1,21 @@
 """Tests für den ReportLab-PDF-Export."""
 
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
+from reportlab.platypus import Paragraph
+
 from meeting_summary.exceptions import PdfExportError
-from meeting_summary.models import MeetingProtocol, TodoItem, TopicSection
+from meeting_summary.models import (
+    MeetingProtocol,
+    MeetingTime,
+    MeetingTimeSource,
+    TodoItem,
+    TopicSection,
+)
 from meeting_summary.services import pdf_export as pdf_export_module
 from meeting_summary.services.pdf_export import ReportLabExporter
 
@@ -57,6 +66,68 @@ def test_export_supports_people_topics_and_todos(tmp_path: Path) -> None:
 
     assert result_path.is_file()
     assert result_path.read_bytes().startswith(b"%PDF-")
+
+
+@pytest.mark.parametrize(
+    ("source", "expected_source"),
+    [
+        (
+            MeetingTimeSource.EMBEDDED_METADATA,
+            "Audiodatei-Metadaten",
+        ),
+        (
+            MeetingTimeSource.PROCESSING_TIME,
+            "Verarbeitungszeit (Fallback)",
+        ),
+    ],
+)
+def test_export_includes_meeting_time_and_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    source: MeetingTimeSource,
+    expected_source: str,
+) -> None:
+    document = Mock()
+    monkeypatch.setattr(
+        pdf_export_module,
+        "SimpleDocTemplate",
+        Mock(return_value=document),
+    )
+
+    protocol = MeetingProtocol(
+        short_summary="Testzusammenfassung",
+        topics=(),
+        meeting_time=MeetingTime(
+            value=datetime(
+                2026,
+                9,
+                24,
+                18,
+                30,
+                tzinfo=UTC,
+            ),
+            source=source,
+        ),
+    )
+
+    ReportLabExporter().export(
+        protocol,
+        tmp_path / "protokoll.pdf",
+    )
+
+    story = document.build.call_args.args[0]
+    paragraph_texts = tuple(
+        element.getPlainText()
+        for element in story
+        if isinstance(element, Paragraph)
+    )
+
+    assert (
+        "Datum und Uhrzeit: "
+        "24.09.2026, 18:30 Uhr (UTC+00:00)"
+        in paragraph_texts
+    )
+    assert f"Zeitquelle: {expected_source}" in paragraph_texts
 
 
 def test_export_translates_reportlab_error(
