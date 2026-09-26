@@ -23,21 +23,48 @@ Beispielprompt:
 
 ```text
 CLI
- └─ MeetingPipeline
-     ├─ WhisperTranscriber      Audio -> Transcript
-     ├─ OllamaSummarizer        Transcript -> MeetingProtocol
-     │   └─ OllamaClient        lokale HTTP-API
-     └─ ReportLabExporter       MeetingProtocol -> PDF
+ └─ build_pipeline (Composition Root)
+     └─ MeetingPipeline
+         ├─ PyAvMeetingTimeResolver  Audio -> MeetingTime
+         ├─ WhisperTranscriber       Audio -> Transcript
+         ├─ OllamaSummarizer         Transcript -> MeetingProtocol
+         │   └─ OllamaClient         lokale HTTP-API
+         └─ ReportLabExporter        MeetingProtocol -> PDF
 ```
 
 - `models.py`: reine Datenobjekte, keine externen Bibliotheken.
 - `pipeline.py`: Ablaufsteuerung über kleine Schnittstellen (`Protocol`).
-- `services/`: Adapter zu Whisper, Ollama und PDF.
+- `bootstrap.py`: erzeugt und verdrahtet die konkreten Adapter.
+- `services/audio_metadata.py`: liest den Meetingzeitpunkt aus der Audiodatei.
+- `services/`: Adapter zu Whisper, PyAV, Ollama und ReportLab.
 - `cli.py`: Argumente, Benutzertexte und Exit-Codes.
 - `tests/`: Tests entlang derselben Modulgrenzen.
 
 Die Abhängigkeiten zeigen nur nach innen: Services dürfen die Datenmodelle
 kennen. Die Datenmodelle dürfen keine Services kennen.
+
+## Aktueller Implementierungsstand
+
+Abgeschlossen und getestet:
+
+- unveränderliche Domänenmodelle;
+- robuster Ollama-HTTP-Client;
+- strukturierte Meetingzusammenfassung;
+- Extraktion ausdrücklich genannter Personen;
+- Whisper-Transkription mit optionalen Hotwords;
+- Meetingzeit aus PyAV-Metadaten mit Fallback;
+- ReportLab-PDF mit Themen, Personen und To-do-Checkboxen;
+- Pipeline, Composition Root und ausführbare CLI.
+
+Noch offen:
+
+- produktive Infrastrukturprüfung für Ollama und das konfigurierte Modell;
+- optionaler Ausgabepfad und Fortschrittsmeldungen;
+- Desktop-Oberfläche und Hintergrundverarbeitung;
+- Persistenz, Sprecherdiarisierung und RAG;
+- geprüfte PyInstaller-Auslieferung.
+
+Die detaillierte langfristige Planung steht in `docs/roadmap.md`.
 
 ## Entwicklungsumgebung
 
@@ -236,11 +263,18 @@ Datei:
 Die vorhandene Pipeline soll nur koordinieren:
 
 ```text
-audio_path -> transcribe -> summarize -> export -> pdf_path
+audio_path
+    -> resolve meeting time
+    -> transcribe
+    -> summarize
+    -> attach meeting time
+    -> export
+    -> pdf_path
 ```
 
-Keine HTTP-, Whisper- oder PDF-Details gehören hier hinein. Schreibe einen Test
-mit drei Fakes und prüfe Aufrufreihenfolge sowie weitergereichte Werte.
+Keine HTTP-, Whisper- oder PDF-Details gehören hier hinein. Der Pipeline-Test
+verwendet vier ersetzte Abhängigkeiten und prüft die weitergereichten Werte.
+Adapterdetails bleiben außerhalb der Pipeline.
 
 ## Schritt 8: CLI fertigstellen
 
@@ -299,10 +333,22 @@ Vor der Zielrechner-Verteilung testen:
 
 ## Nächster konkreter Schritt
 
-Beginne mit Schritt 1. Ändere nur `models.py` und `test_models.py`. Führe dann aus:
+Implementiere die produktive Ollama-Infrastrukturprüfung in
+`meeting_summary/services/infrastructure.py`.
 
-```powershell
-pytest tests/test_models.py -v
-```
+Sie soll:
 
-Danach ist der Ollama-Client der erste externe Adapter.
+- `OllamaClient.list_models()` verwenden;
+- das konfigurierte Modell exakt prüfen;
+- bei fehlendem Modell einen verständlichen projektspezifischen Fehler melden;
+- Ollama weder automatisch installieren noch starten;
+- vollständig mit Mocks testbar bleiben.
+
+Zugehörige Dateien:
+
+- `meeting_summary/services/infrastructure.py`
+- `meeting_summary/exceptions.py`
+- `tests/test_infrastructure.py`
+
+Danach wird entschieden, ob die Prüfung bei jedem Lauf oder über eine separate
+CLI-Option `--check` ausgelöst wird.
