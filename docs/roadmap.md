@@ -4,6 +4,9 @@ Stand: 25. September 2026. Dieses Dokument hält die besprochenen **Ziele**
 fest; es behauptet keinen bereits implementierten Funktionsumfang. Die
 tatsächliche Umsetzung ist jeweils am Repository zu prüfen.
 
+Die bestätigte visuelle und responsive Produktrichtung steht in
+[`docs/ui-design.md`](ui-design.md).
+
 ## Zweck
 
 Die Anwendung soll Meetings aufnehmen oder importieren, transkribieren und aus
