@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock
 
 import pytest
 
@@ -12,7 +12,44 @@ from meeting_summary.exceptions import (
     OllamaModelNotInstalledError,
     TranscriptionError,
 )
-from meeting_summary.pipeline import MeetingPipeline
+from meeting_summary.pipeline import MeetingPipeline, ProcessingStage
+
+
+@pytest.mark.parametrize(
+    ("stage", "expected_message"),
+    [
+        (
+            ProcessingStage.READING_METADATA,
+            "Audiometadaten werden gelesen ...",
+        ),
+        (
+            ProcessingStage.TRANSCRIBING,
+            "Audio wird transkribiert ...",
+        ),
+        (
+            ProcessingStage.SUMMARIZING,
+            "Protokoll wird zusammengefasst ...",
+        ),
+        (
+            ProcessingStage.EXPORTING,
+            "PDF wird erstellt ...",
+        ),
+        (
+            ProcessingStage.COMPLETED,
+            "Verarbeitung abgeschlossen.",
+        ),
+    ],
+)
+def test_console_progress_reporter_prints_message(
+    stage: ProcessingStage,
+    expected_message: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    reporter = cli.ConsoleProgressReporter()
+
+    reporter.report(stage)
+
+    assert capsys.readouterr().out.strip() == expected_message
 
 
 def test_main_runs_pipeline_and_prints_output(
@@ -54,7 +91,15 @@ def test_main_runs_pipeline_and_prints_output(
                 "Anna",
                 "Release Notes",
             )
-        )
+        ),
+        progress_reporter=ANY,
+    )
+    progress_reporter = build_pipeline.call_args.kwargs[
+        "progress_reporter"
+    ]
+    assert isinstance(
+        progress_reporter,
+        cli.ConsoleProgressReporter,
     )
     pipeline.run.assert_called_once_with(
         audio_path,
@@ -92,7 +137,10 @@ def test_main_reports_expected_application_error(
     exit_code = cli.main()
     captured = capsys.readouterr()
 
-    build_pipeline.assert_called_once_with(AppConfig())
+    build_pipeline.assert_called_once_with(
+        AppConfig(),
+        progress_reporter=ANY,
+    )
     assert exit_code == 1
     assert captured.out == ""
     assert captured.err.strip() == (
@@ -130,7 +178,10 @@ def test_main_reports_infrastructure_error_during_startup(
     captured = capsys.readouterr()
 
     assert exit_code == 1
-    build_pipeline.assert_called_once_with(AppConfig())
+    build_pipeline.assert_called_once_with(
+        AppConfig(),
+        progress_reporter=ANY,
+    )
     assert captured.out == ""
     assert captured.err.strip() == f"Fehler: {error_message}"
 
@@ -171,7 +222,10 @@ def test_main_uses_explicit_output_path(
     exit_code = cli.main()
 
     assert exit_code == 0
-    build_pipeline.assert_called_once_with(AppConfig())
+    build_pipeline.assert_called_once_with(
+        AppConfig(),
+        progress_reporter=ANY,
+    )
     pipeline.run.assert_called_once_with(
         audio_path,
         requested_output_path,

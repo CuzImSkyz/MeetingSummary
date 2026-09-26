@@ -23,8 +23,10 @@ Beispielprompt:
 
 ```text
 CLI
+ ├─ ConsoleProgressReporter
  └─ build_pipeline (Composition Root)
      └─ MeetingPipeline
+         ├─ ProgressReporter          ProcessingStage -> Oberfläche
          ├─ PyAvMeetingTimeResolver  Audio -> MeetingTime
          ├─ WhisperTranscriber       Audio -> Transcript
          ├─ OllamaSummarizer         Transcript -> MeetingProtocol
@@ -56,11 +58,11 @@ Abgeschlossen und getestet:
 - optionaler CLI-Ausgabepfad;
 - Meetingzeit aus PyAV-Metadaten mit Fallback;
 - ReportLab-PDF mit Themen, Personen und To-do-Checkboxen;
+- semantische Fortschrittsereignisse mit Konsolenausgabe;
 - Pipeline, Composition Root und ausführbare CLI.
 
 Noch offen:
 
-- Fortschrittsmeldungen für längere Verarbeitungsschritte;
 - Desktop-Oberfläche und Hintergrundverarbeitung;
 - Persistenz, Sprecherdiarisierung und RAG;
 - geprüfte PyInstaller-Auslieferung.
@@ -261,7 +263,7 @@ Datei:
 
 - `meeting_summary/pipeline.py`
 
-Die vorhandene Pipeline soll nur koordinieren:
+Die vorhandene Pipeline koordiniert:
 
 ```text
 audio_path
@@ -274,8 +276,9 @@ audio_path
 ```
 
 Keine HTTP-, Whisper- oder PDF-Details gehören hier hinein. Der Pipeline-Test
-verwendet vier ersetzte Abhängigkeiten und prüft die weitergereichten Werte.
-Adapterdetails bleiben außerhalb der Pipeline.
+verwendet ersetzte Abhängigkeiten und prüft die weitergereichten Werte sowie
+die Reihenfolge der `ProcessingStage`-Ereignisse. Adapter- und
+Darstellungsdetails bleiben außerhalb der Pipeline.
 
 ## Schritt 8: CLI fertigstellen
 
@@ -290,15 +293,14 @@ Bereits umgesetzt:
 - wiederholbare Hotwords;
 - Standardausgabe `<audio_stem>.pdf` neben der Audiodatei;
 - Exit-Code 0 bei Erfolg, 1 bei erwarteten Fehlern;
+- Fortschrittsmeldungen für Metadaten, Transkription, Zusammenfassung und PDF;
 - keine vollständigen Tracebacks für normale Benutzerfehler.
 
 Teste die CLI mit gemockter Pipeline. Ein CLI-Test darf weder ein Modell laden
 noch Ollama aufrufen.
 
-Noch offen sind aussagekräftige Fortschrittsmeldungen für die einzelnen
-Verarbeitungsschritte. Eine separate Option `--check` ist nur dann sinnvoll,
-wenn dafür ein konkreter Diagnosebedarf entsteht; normale Läufe prüfen Ollama
-bereits automatisch.
+Eine separate Option `--check` ist nur dann sinnvoll, wenn dafür ein konkreter
+Diagnosebedarf entsteht; normale Läufe prüfen Ollama bereits automatisch.
 
 ## Schritt 9: Echter End-to-End-Test
 
@@ -338,18 +340,7 @@ Vor der Zielrechner-Verteilung testen:
 
 ## Nächster konkreter Schritt
 
-Entwirf Fortschrittsmeldungen für die längeren Verarbeitungsschritte.
-
-Vor der Implementierung ist zu entscheiden:
-
-- welche Schicht fachliche Fortschrittsereignisse erzeugt;
-- wie CLI und spätere Desktop-Oberfläche dieselben Ereignisse konsumieren;
-- wie Tests die Reihenfolge ohne echte Modelle prüfen;
-- wie Fehler und erfolgreiche Fertigstellung dargestellt werden.
-
-Zugehörige Dateien:
-
-- `meeting_summary/pipeline.py`
-- `meeting_summary/cli.py`
-- `tests/test_pipeline.py`
-- `tests/test_cli.py`
+Führe einen bewussten End-to-End-Test mit einer kurzen lokalen Audiodatei durch.
+Prüfe Transkript, strukturierte Zusammenfassung, Fortschrittsausgabe und das
+erzeugte PDF. Halte Modellnamen, Laufzeiten und auffällige Abweichungen fest,
+bevor Desktop-Oberfläche oder Packaging begonnen werden.

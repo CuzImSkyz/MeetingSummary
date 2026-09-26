@@ -7,6 +7,22 @@ from pathlib import Path
 from .bootstrap import build_pipeline
 from .config import AppConfig
 from .exceptions import MeetingSummaryError
+from .pipeline import ProcessingStage
+
+
+class ConsoleProgressReporter:
+    """Gibt den Verarbeitungsfortschritt auf der Konsole aus."""
+
+    _MESSAGES = {
+        ProcessingStage.READING_METADATA: "Audiometadaten werden gelesen ...",
+        ProcessingStage.TRANSCRIBING: "Audio wird transkribiert ...",
+        ProcessingStage.SUMMARIZING: "Protokoll wird zusammengefasst ...",
+        ProcessingStage.EXPORTING: "PDF wird erstellt ...",
+        ProcessingStage.COMPLETED: "Verarbeitung abgeschlossen.",
+    }
+
+    def report(self, stage: ProcessingStage) -> None:
+        print(self._MESSAGES[stage], flush=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -48,9 +64,13 @@ def main() -> int:
     config = AppConfig(
         whisper_hotwords=tuple(arguments.hotword),
     )
+    progress_reporter = ConsoleProgressReporter()
 
     try:
-        result_path = build_pipeline(config).run(
+        result_path = build_pipeline(
+            config,
+            progress_reporter=progress_reporter,
+        ).run(
             arguments.audio,
             target_path,
         )

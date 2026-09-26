@@ -132,6 +132,10 @@ Hintergrundprozess oder Worker innerhalb der Anwendung; ein verteilter
 Jobdienst ist dafür nicht nötig. Ein späteres `POST /meetings` kann einen Job
 annehmen und einen Status-Endpunkt bereitstellen.
 
+Die aktuelle CLI verwendet davon getrennte, nicht persistierte
+`ProcessingStage`-Ereignisse. Sie informieren die Oberfläche über den laufenden
+Pipeline-Schritt, bilden aber noch keine Job-State-Machine ab.
+
 ## Korrektur von Transkriptionsfehlern
 
 Das **Rohtranskript bleibt unverändert** und wird neben einer bearbeiteten

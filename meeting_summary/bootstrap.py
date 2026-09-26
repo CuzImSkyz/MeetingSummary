@@ -1,7 +1,7 @@
 """Verdrahtet die konkreten Adapter zur lauffähigen Anwendung."""
 
 from .config import AppConfig
-from .pipeline import MeetingPipeline
+from .pipeline import MeetingPipeline, ProgressReporter
 from .services.audio_metadata import PyAvMeetingTimeResolver
 from .services.infrastructure import InfrastructureChecker
 from .services.ollama_client import OllamaClient
@@ -10,7 +10,10 @@ from .services.summarization import OllamaSummarizer
 from .services.transcription import WhisperTranscriber
 
 
-def build_pipeline(config: AppConfig) -> MeetingPipeline:
+def build_pipeline(
+    config: AppConfig,
+    progress_reporter: ProgressReporter,
+) -> MeetingPipeline:
     """Erzeugt die Anwendung mit den konfigurierten Adaptern."""
 
     ollama_client = OllamaClient(config)
@@ -25,4 +28,5 @@ def build_pipeline(config: AppConfig) -> MeetingPipeline:
         meeting_time_resolver=PyAvMeetingTimeResolver(),
         summarizer=OllamaSummarizer(ollama_client),
         pdf_exporter=ReportLabExporter(),
+        progress_reporter=progress_reporter,
     )

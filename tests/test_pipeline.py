@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from meeting_summary.models import (
     MeetingProtocol,
@@ -14,6 +14,8 @@ from meeting_summary.pipeline import (
     MeetingPipeline,
     MeetingTimeResolver,
     PdfExporter,
+    ProcessingStage,
+    ProgressReporter,
     Summarizer,
     Transcriber,
 )
@@ -51,20 +53,61 @@ def test_run_passes_results_through_all_pipeline_steps() -> None:
     pdf_exporter = Mock(spec=PdfExporter)
     pdf_exporter.export.return_value = target_path
 
+    progress_reporter = Mock(spec=ProgressReporter)
+    call_order = Mock()
+    call_order.attach_mock(
+        progress_reporter,
+        "progress",
+    )
+    call_order.attach_mock(
+        meeting_time_resolver,
+        "meeting_time",
+    )
+    call_order.attach_mock(
+        transcriber,
+        "transcriber",
+    )
+    call_order.attach_mock(
+        summarizer,
+        "summarizer",
+    )
+    call_order.attach_mock(
+        pdf_exporter,
+        "pdf_exporter",
+    )
+
     pipeline = MeetingPipeline(
         transcriber=transcriber,
         meeting_time_resolver=meeting_time_resolver,
         summarizer=summarizer,
         pdf_exporter=pdf_exporter,
+        progress_reporter=progress_reporter,
     )
 
     result = pipeline.run(audio_path, target_path)
 
     assert result == target_path
-    transcriber.transcribe.assert_called_once_with(audio_path)
-    meeting_time_resolver.resolve.assert_called_once_with(audio_path)
-    summarizer.summarize.assert_called_once_with(transcript)
-    pdf_exporter.export.assert_called_once_with(
-        expected_protocol,
-        target_path,
-    )
+    assert call_order.mock_calls == [
+        call.progress.report(
+            ProcessingStage.READING_METADATA
+        ),
+        call.meeting_time.resolve(audio_path),
+        call.progress.report(
+            ProcessingStage.TRANSCRIBING
+        ),
+        call.transcriber.transcribe(audio_path),
+        call.progress.report(
+            ProcessingStage.SUMMARIZING
+        ),
+        call.summarizer.summarize(transcript),
+        call.progress.report(
+            ProcessingStage.EXPORTING
+        ),
+        call.pdf_exporter.export(
+            expected_protocol,
+            target_path,
+        ),
+        call.progress.report(
+            ProcessingStage.COMPLETED
+        ),
+    ]
