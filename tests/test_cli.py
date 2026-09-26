@@ -31,7 +31,6 @@ def test_main_runs_pipeline_and_prints_output(
         cli,
         "build_pipeline",
         build_pipeline,
-        raising=False,
     )
     monkeypatch.setattr(
         sys,
@@ -83,7 +82,6 @@ def test_main_reports_expected_application_error(
         cli,
         "build_pipeline",
         build_pipeline,
-        raising=False,
     )
     monkeypatch.setattr(
         sys,
@@ -135,3 +133,49 @@ def test_main_reports_infrastructure_error_during_startup(
     build_pipeline.assert_called_once_with(AppConfig())
     assert captured.out == ""
     assert captured.err.strip() == f"Fehler: {error_message}"
+
+
+def test_main_uses_explicit_output_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    audio_path = tmp_path / "meeting.mp3"
+    requested_output_path = (
+        tmp_path / "exports" / "custom-name.txt"
+    )
+    exported_output_path = requested_output_path.with_suffix(
+        ".pdf"
+    )
+
+    pipeline = Mock(spec=MeetingPipeline)
+    pipeline.run.return_value = exported_output_path
+    build_pipeline = Mock(return_value=pipeline)
+
+    monkeypatch.setattr(
+        cli,
+        "build_pipeline",
+        build_pipeline,
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "meeting_summary",
+            "--output",
+            str(requested_output_path),
+            str(audio_path),
+        ],
+    )
+
+    exit_code = cli.main()
+
+    assert exit_code == 0
+    build_pipeline.assert_called_once_with(AppConfig())
+    pipeline.run.assert_called_once_with(
+        audio_path,
+        requested_output_path,
+    )
+    assert capsys.readouterr().out.strip() == (
+        f"PDF erstellt: {exported_output_path}"
+    )

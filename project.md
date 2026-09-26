@@ -13,6 +13,7 @@ Die Anwendung kann:
 
 - lokale WAV- und MP3-Dateien mit `faster-whisper` transkribieren;
 - wiederholbare `--hotword`-Optionen für Namen und Fachbegriffe verwenden;
+- einen optionalen Ausgabepfad über `--output` verwenden;
 - vor der Verarbeitung Ollama und das konfigurierte Modell prüfen;
 - Datum und Uhrzeit aus eingebetteten Audiometadaten übernehmen;
 - ohne verwertbare Zeitmetadaten die aktuelle Verarbeitungszeit verwenden;
@@ -106,7 +107,19 @@ python -m meeting_summary `
   ".\local-data\meeting.mp3"
 ```
 
-Das PDF wird mit demselben Basisnamen neben der Audiodatei erzeugt:
+Mit einem eigenen Ausgabepfad:
+
+```powershell
+python -m meeting_summary `
+  --output ".\exports\protokoll.txt" `
+  ".\local-data\meeting.mp3"
+```
+
+Der PDF-Exporter normalisiert die Dateiendung des Ausgabepfads zu `.pdf`.
+Das Zielverzeichnis muss bereits existieren.
+
+Ohne `--output` wird das PDF mit demselben Basisnamen neben der Audiodatei
+erzeugt:
 
 ```text
 meeting.mp3 -> meeting.pdf

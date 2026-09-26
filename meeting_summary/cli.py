@@ -24,6 +24,11 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--output",
+        type=Path,
+        help="Gewünschter Pfad der erzeugten Protokolldatei",
+    )
+    parser.add_argument(
         "audio",
         type=Path,
         help="Pfad zu einer WAV- oder MP3-Datei",
@@ -35,7 +40,11 @@ def main() -> int:
     """Verarbeitet eine Audiodatei und meldet das Ergebnis an die Shell."""
 
     arguments = build_parser().parse_args()
-    target_path = arguments.audio.with_suffix(".pdf")
+    target_path = (
+        arguments.output
+        if arguments.output is not None
+        else arguments.audio.with_suffix(".pdf")
+    )
     config = AppConfig(
         whisper_hotwords=tuple(arguments.hotword),
     )

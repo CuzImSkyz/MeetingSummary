@@ -53,13 +53,14 @@ Abgeschlossen und getestet:
 - strukturierte Meetingzusammenfassung;
 - Extraktion ausdrücklich genannter Personen;
 - Whisper-Transkription mit optionalen Hotwords;
+- optionaler CLI-Ausgabepfad;
 - Meetingzeit aus PyAV-Metadaten mit Fallback;
 - ReportLab-PDF mit Themen, Personen und To-do-Checkboxen;
 - Pipeline, Composition Root und ausführbare CLI.
 
 Noch offen:
 
-- optionaler Ausgabepfad und Fortschrittsmeldungen;
+- Fortschrittsmeldungen für längere Verarbeitungsschritte;
 - Desktop-Oberfläche und Hintergrundverarbeitung;
 - Persistenz, Sprecherdiarisierung und RAG;
 - geprüfte PyInstaller-Auslieferung.
@@ -283,17 +284,21 @@ Dateien:
 - `meeting_summary/cli.py`
 - `tests/test_cli.py`
 
-Ergänze:
+Bereits umgesetzt:
 
-- optionalen Ausgabepfad `--output`;
-- `--check` für die Infrastrukturprüfung;
-- Standardausgabe `<audio_stem>_protokoll.pdf` neben der Audiodatei;
-- klare Fortschrittsmeldungen;
+- optionaler Ausgabepfad `--output`;
+- wiederholbare Hotwords;
+- Standardausgabe `<audio_stem>.pdf` neben der Audiodatei;
 - Exit-Code 0 bei Erfolg, 1 bei erwarteten Fehlern;
 - keine vollständigen Tracebacks für normale Benutzerfehler.
 
 Teste die CLI mit gemockter Pipeline. Ein CLI-Test darf weder ein Modell laden
 noch Ollama aufrufen.
+
+Noch offen sind aussagekräftige Fortschrittsmeldungen für die einzelnen
+Verarbeitungsschritte. Eine separate Option `--check` ist nur dann sinnvoll,
+wenn dafür ein konkreter Diagnosebedarf entsteht; normale Läufe prüfen Ollama
+bereits automatisch.
 
 ## Schritt 9: Echter End-to-End-Test
 
@@ -333,16 +338,18 @@ Vor der Zielrechner-Verteilung testen:
 
 ## Nächster konkreter Schritt
 
-Erweitere die CLI um einen optionalen Ausgabepfad `--output`.
+Entwirf Fortschrittsmeldungen für die längeren Verarbeitungsschritte.
 
-Dabei gelten folgende Regeln:
+Vor der Implementierung ist zu entscheiden:
 
-- Ohne `--output` bleibt der bisherige Pfad neben der Audiodatei erhalten.
-- Ein angegebener Ausgabepfad wird an die Pipeline weitergereicht.
-- Der ReportLab-Adapter normalisiert die Dateiendung weiterhin auf `.pdf`.
-- CLI-Tests laden weder Whisper noch Ollama.
+- welche Schicht fachliche Fortschrittsereignisse erzeugt;
+- wie CLI und spätere Desktop-Oberfläche dieselben Ereignisse konsumieren;
+- wie Tests die Reihenfolge ohne echte Modelle prüfen;
+- wie Fehler und erfolgreiche Fertigstellung dargestellt werden.
 
 Zugehörige Dateien:
 
+- `meeting_summary/pipeline.py`
 - `meeting_summary/cli.py`
+- `tests/test_pipeline.py`
 - `tests/test_cli.py`
