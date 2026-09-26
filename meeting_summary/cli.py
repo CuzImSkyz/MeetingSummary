@@ -5,12 +5,23 @@ import sys
 from pathlib import Path
 
 from .bootstrap import build_pipeline
+from .config import AppConfig
 from .exceptions import MeetingSummaryError
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Erstellt aus einer Audiodatei ein Meeting-Protokoll als PDF."
+    )
+    parser.add_argument(
+        "--hotword",
+        action="append",
+        default=[],
+        metavar="BEGRIFF",
+        help=(
+            "Bevorzugter Name oder Fachbegriff für Whisper; "
+            "mehrere hotwords möglich."
+        ),
     )
     parser.add_argument(
         "audio",
@@ -25,9 +36,12 @@ def main() -> int:
 
     arguments = build_parser().parse_args()
     target_path = arguments.audio.with_suffix(".pdf")
+    config = AppConfig(
+        whisper_hotwords=tuple(arguments.hotword),
+    )
 
     try:
-        result_path = build_pipeline().run(
+        result_path = build_pipeline(config).run(
             arguments.audio,
             target_path,
         )

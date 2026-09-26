@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 from meeting_summary import cli
+from meeting_summary.config import AppConfig
 from meeting_summary.exceptions import TranscriptionError
 from meeting_summary.pipeline import MeetingPipeline
 
@@ -32,13 +33,27 @@ def test_main_runs_pipeline_and_prints_output(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["meeting_summary", str(audio_path)],
+        [
+            "meeting_summary",
+            "--hotword",
+            "Anna",
+            "--hotword",
+            "Release Notes",
+            str(audio_path),
+        ],
     )
 
     exit_code = cli.main()
 
     assert exit_code == 0
-    build_pipeline.assert_called_once_with()
+    build_pipeline.assert_called_once_with(
+        AppConfig(
+            whisper_hotwords=(
+                "Anna",
+                "Release Notes",
+            )
+        )
+    )
     pipeline.run.assert_called_once_with(
         audio_path,
         output_path,
@@ -60,10 +75,11 @@ def test_main_reports_expected_application_error(
         f"Audiodatei wurde nicht gefunden: {audio_path}"
     )
 
+    build_pipeline = Mock(return_value=pipeline)
     monkeypatch.setattr(
         cli,
         "build_pipeline",
-        Mock(return_value=pipeline),
+        build_pipeline,
         raising=False,
     )
     monkeypatch.setattr(
@@ -75,6 +91,7 @@ def test_main_reports_expected_application_error(
     exit_code = cli.main()
     captured = capsys.readouterr()
 
+    build_pipeline.assert_called_once_with(AppConfig())
     assert exit_code == 1
     assert captured.out == ""
     assert captured.err.strip() == (

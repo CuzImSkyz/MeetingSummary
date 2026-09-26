@@ -9,10 +9,9 @@ from .services.summarization import OllamaSummarizer
 from .services.transcription import WhisperTranscriber
 
 
-def build_pipeline() -> MeetingPipeline:
-    """Erzeugt die Anwendung mit den standardmäßig verwendeten Adaptern."""
+def build_pipeline(config: AppConfig) -> MeetingPipeline:
+    """Erzeugt die Anwendung mit den konfigurierten Adaptern."""
 
-    config = AppConfig()
     ollama_client = OllamaClient(config)
 
     return MeetingPipeline(
