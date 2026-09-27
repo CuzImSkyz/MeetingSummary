@@ -1,0 +1,128 @@
+.page {
+  display: flex;
+  min-height: calc(100vh - var(--space-8) - var(--space-8));
+  max-width: 72rem;
+  margin: 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4rem;
+}
+
+.header {
+  max-width: 48rem;
+}
+
+.kicker {
+  margin: 0 0 var(--space-4);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.75rem, 5vw, 5.5rem);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.description {
+  max-width: 38rem;
+  margin: var(--space-6) 0 0;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 1fr);
+  gap: var(--space-4);
+}
+
+.primaryAction,
+.uploadAction {
+  display: flex;
+  min-height: 13rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--motion-standard),
+    border-color var(--motion-standard),
+    background-color var(--motion-standard);
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.uploadAction {
+  position: relative;
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.primaryAction > span,
+.uploadAction > span {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.primaryAction strong,
+.uploadAction strong {
+  font-size: 1.125rem;
+}
+
+.primaryAction small,
+.uploadAction small {
+  color: inherit;
+  opacity: 0.72;
+}
+
+.primaryAction:hover {
+  transform: translateY(-2px);
+}
+
+.uploadAction:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-raised);
+}
+
+.primaryAction:focus-visible,
+.uploadAction:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .uploadAction {
+    transition: none;
+  }
+
+  .primaryAction:hover {
+    transform: none;
+  }
+}
