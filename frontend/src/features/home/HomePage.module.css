@@ -89,7 +89,7 @@
   opacity: 0.72;
 }
 
-.primaryAction:hover {
+.primaryAction:not(:disabled):hover {
   transform: translateY(-2px);
 }
 
@@ -122,7 +122,22 @@
     transition: none;
   }
 
-  .primaryAction:hover {
+  .primaryAction:not(:disabled):hover {
     transform: none;
   }
+}
+
+.error {
+  margin: var(--space-4) 0 0;
+  color: var(--color-accent);
+}
+
+.pendingRecording {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+}
+
+.primaryAction:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }

@@ -18,8 +18,10 @@ Die erste UI-Laufzeit ist inzwischen festgelegt:
 
 Implementiert sind derzeit die Desktop-App-Shell, Home, der visuelle
 Aufnahmebildschirm, ein laufender Aufnahmetimer und ein getesteter
-`MediaRecorder`-Browseradapter. Mikrofonaufnahme und React-Oberfläche sind noch
-nicht miteinander verdrahtet.
+`MediaRecorder`-Browseradapter. Die React-Oberfläche startet und beendet die
+Mikrofonaufnahme über eine injizierte `AudioRecorder`-Schnittstelle. Der fertige
+Audioblob wird vorübergehend von der App-Komposition gehalten. Die Übergabe an
+den Python-Anwendungskern und die anschließende Verarbeitung fehlen noch.
 
 Die Frontend-Struktur trennt App-Komposition, Features, gemeinsame Darstellung
 und Infrastrukturadapter. Browser- oder Backenddetails dürfen nicht direkt in
