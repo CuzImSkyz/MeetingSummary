@@ -6,6 +6,25 @@ Dieses Dokument hält die verbindliche gestalterische Richtung fest. Es
 beschreibt Zielzustände der Oberfläche, nicht bereits implementierten
 Funktionsumfang. Technische Detailentscheidungen werden separat getroffen.
 
+## Technischer Implementierungsstand
+
+Die erste UI-Laufzeit ist inzwischen festgelegt:
+
+- React 19 mit TypeScript und Vite;
+- CSS Modules für lokal begrenzte Komponentenstile;
+- semantische Design-Tokens für Dark und Light Mode;
+- Oxlint sowie der TypeScript-Compiler für statische Prüfungen;
+- Vitest und Testing Library für Unit- und Komponententests.
+
+Implementiert sind derzeit die Desktop-App-Shell, Home, der visuelle
+Aufnahmebildschirm, ein laufender Aufnahmetimer und ein getesteter
+`MediaRecorder`-Browseradapter. Mikrofonaufnahme und React-Oberfläche sind noch
+nicht miteinander verdrahtet.
+
+Die Frontend-Struktur trennt App-Komposition, Features, gemeinsame Darstellung
+und Infrastrukturadapter. Browser- oder Backenddetails dürfen nicht direkt in
+Seitenkomponenten eingebaut werden.
+
 ## Produktidentität
 
 - Produktname: **MeetMe**.
@@ -135,7 +154,8 @@ Ziele sind für Touch ungefähr 44 × 44 Pixel groß.
 
 ## Noch nicht festgelegt
 
-- React/Tauri, eine Browser-Anwendung oder eine andere konkrete UI-Laufzeit;
+- Desktop-Verpackung und Distribution, beispielsweise über Tauri;
+- Transportvertrag zwischen React-Frontend und Python-Anwendungskern;
 - endgültige Schriftfamilie und Logoausarbeitung;
 - genaue Tablet- und Smartphone-Navigation nach Usability-Test;
 - visuelle Darstellung des Review- und Ergebnisbildschirms.
