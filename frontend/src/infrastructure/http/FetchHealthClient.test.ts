@@ -21,7 +21,7 @@ describe('FetchHealthClient', () => {
 
     const client = new FetchHealthClient()
 
-    await expect(client.check()).resolves.toBe('ok')
+    await expect(client.check()).resolves.toBeUndefined()
     expect(fetchMock).toHaveBeenCalledWith('/api/health')
   })
 

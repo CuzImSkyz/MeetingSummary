@@ -1,4 +1,3 @@
-export type HealthStatus = 'ok'
 
 export type HealthClientErrorCode =
   | 'unreachable'
@@ -20,5 +19,5 @@ export class HealthClientError extends Error {
 }
 
 export interface HealthClient {
-  check(): Promise<HealthStatus>
+  check(): Promise<void>
 }

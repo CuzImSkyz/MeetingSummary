@@ -1,11 +1,10 @@
 import {
   HealthClientError,
   type HealthClient,
-  type HealthStatus,
 } from '../../features/system/healthClient'
 
 interface HealthResponse {
-  status: HealthStatus
+  status: 'ok'
 }
 
 export class FetchHealthClient implements HealthClient {
@@ -15,7 +14,7 @@ export class FetchHealthClient implements HealthClient {
     this.baseUrl = baseUrl.replace(/\/$/, '')
   }
 
-  async check(): Promise<HealthStatus> {
+  async check(): Promise<void> {
     let response: Response
 
     try {
@@ -53,8 +52,6 @@ export class FetchHealthClient implements HealthClient {
         'Die Antwort des MeetMe-Dienstes ist ungültig.',
       )
     }
-
-    return body.status
   }
 }
 
