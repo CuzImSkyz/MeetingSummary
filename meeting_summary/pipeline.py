@@ -47,22 +47,26 @@ class MeetingPipeline:
         meeting_time_resolver: MeetingTimeResolver,
         summarizer: Summarizer,
         pdf_exporter: PdfExporter,
-        progress_reporter: ProgressReporter,
     ) -> None:
         self._transcriber = transcriber
         self._meeting_time_resolver = meeting_time_resolver
         self._summarizer = summarizer
         self._pdf_exporter = pdf_exporter
-        self._progress_reporter = progress_reporter
 
-    def run(self, audio_path: Path, target_path: Path) -> Path:
-        self._progress_reporter.report(ProcessingStage.READING_METADATA)
+    def run(
+        self,
+        audio_path: Path,
+        target_path: Path,
+        *,
+        progress_reporter: ProgressReporter,
+    ) -> Path:
+        progress_reporter.report(ProcessingStage.READING_METADATA)
         meeting_time = self._meeting_time_resolver.resolve(audio_path)
-        self._progress_reporter.report(ProcessingStage.TRANSCRIBING)
+        progress_reporter.report(ProcessingStage.TRANSCRIBING)
         transcript = self._transcriber.transcribe(audio_path)
-        self._progress_reporter.report(ProcessingStage.SUMMARIZING)
+        progress_reporter.report(ProcessingStage.SUMMARIZING)
         protocol = self._summarizer.summarize(transcript)
-        self._progress_reporter.report(ProcessingStage.EXPORTING)
+        progress_reporter.report(ProcessingStage.EXPORTING)
         protocol_with_time = replace(
             protocol,
             meeting_time=meeting_time,
@@ -71,5 +75,5 @@ class MeetingPipeline:
             protocol_with_time,
             target_path,
         )
-        self._progress_reporter.report(ProcessingStage.COMPLETED)
+        progress_reporter.report(ProcessingStage.COMPLETED)
         return result_path

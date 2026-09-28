@@ -81,10 +81,13 @@ def test_run_passes_results_through_all_pipeline_steps() -> None:
         meeting_time_resolver=meeting_time_resolver,
         summarizer=summarizer,
         pdf_exporter=pdf_exporter,
-        progress_reporter=progress_reporter,
     )
 
-    result = pipeline.run(audio_path, target_path)
+    result = pipeline.run(
+        audio_path,
+        target_path,
+        progress_reporter=progress_reporter,
+    )
 
     assert result == target_path
     assert call_order.mock_calls == [

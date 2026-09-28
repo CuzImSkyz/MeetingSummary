@@ -91,10 +91,9 @@ def test_main_runs_pipeline_and_prints_output(
                 "Anna",
                 "Release Notes",
             )
-        ),
-        progress_reporter=ANY,
+        )
     )
-    progress_reporter = build_pipeline.call_args.kwargs[
+    progress_reporter = pipeline.run.call_args.kwargs[
         "progress_reporter"
     ]
     assert isinstance(
@@ -104,6 +103,7 @@ def test_main_runs_pipeline_and_prints_output(
     pipeline.run.assert_called_once_with(
         audio_path,
         output_path,
+        progress_reporter=ANY,
     )
     assert capsys.readouterr().out.strip() == (
         f"PDF erstellt: {output_path}"
@@ -137,8 +137,10 @@ def test_main_reports_expected_application_error(
     exit_code = cli.main()
     captured = capsys.readouterr()
 
-    build_pipeline.assert_called_once_with(
-        AppConfig(),
+    build_pipeline.assert_called_once_with(AppConfig())
+    pipeline.run.assert_called_once_with(
+        audio_path,
+        audio_path.with_suffix(".pdf"),
         progress_reporter=ANY,
     )
     assert exit_code == 1
@@ -178,10 +180,7 @@ def test_main_reports_infrastructure_error_during_startup(
     captured = capsys.readouterr()
 
     assert exit_code == 1
-    build_pipeline.assert_called_once_with(
-        AppConfig(),
-        progress_reporter=ANY,
-    )
+    build_pipeline.assert_called_once_with(AppConfig())
     assert captured.out == ""
     assert captured.err.strip() == f"Fehler: {error_message}"
 
@@ -222,13 +221,11 @@ def test_main_uses_explicit_output_path(
     exit_code = cli.main()
 
     assert exit_code == 0
-    build_pipeline.assert_called_once_with(
-        AppConfig(),
-        progress_reporter=ANY,
-    )
+    build_pipeline.assert_called_once_with(AppConfig())
     pipeline.run.assert_called_once_with(
         audio_path,
         requested_output_path,
+        progress_reporter=ANY,
     )
     assert capsys.readouterr().out.strip() == (
         f"PDF erstellt: {exported_output_path}"

@@ -69,10 +69,10 @@ def main() -> int:
     try:
         result_path = build_pipeline(
             config,
-            progress_reporter=progress_reporter,
         ).run(
             arguments.audio,
             target_path,
+            progress_reporter=progress_reporter,
         )
     except MeetingSummaryError as exc:
         print(f"Fehler: {exc}", file=sys.stderr)

@@ -6,7 +6,6 @@ import pytest
 
 from meeting_summary import bootstrap
 from meeting_summary.config import AppConfig
-from meeting_summary.pipeline import ProgressReporter
 
 
 def test_build_pipeline_checks_infrastructure_before_whisper(
@@ -27,11 +26,6 @@ def test_build_pipeline_checks_infrastructure_before_whisper(
     summarizer = Mock(name="summarizer")
     pdf_exporter = Mock(name="pdf_exporter")
     pipeline = Mock(name="pipeline")
-    progress_reporter = Mock(
-        spec=ProgressReporter,
-        name="progress_reporter",
-    )
-
     def create_transcriber(_: AppConfig) -> Mock:
         events.append("transcriber")
         return transcriber
@@ -88,10 +82,7 @@ def test_build_pipeline_checks_infrastructure_before_whisper(
         pipeline_factory,
     )
 
-    result = bootstrap.build_pipeline(
-        config,
-        progress_reporter=progress_reporter,
-    )
+    result = bootstrap.build_pipeline(config)
 
     assert result is pipeline
     ollama_client_factory.assert_called_once_with(config)
@@ -109,7 +100,6 @@ def test_build_pipeline_checks_infrastructure_before_whisper(
         meeting_time_resolver=meeting_time_resolver,
         summarizer=summarizer,
         pdf_exporter=pdf_exporter,
-        progress_reporter=progress_reporter,
     )
     assert events == [
         "check",
