@@ -18,6 +18,17 @@ npm install
 npm run dev
 ```
 
+Die lokale Python-API wird aus dem Projektwurzelverzeichnis separat gestartet:
+
+```powershell
+python -m uvicorn meeting_summary.api.app:app --host 127.0.0.1 --port 8765
+```
+
+Während der Frontend-Entwicklung leitet Vite Anfragen an `/api` an diese lokale
+API weiter. React-Komponenten enthalten deshalb weder Host noch Port. Der
+Vite-Proxy gehört nur zur Entwicklungsumgebung; für ein späteres Desktop- oder
+Server-Paket wird das Routing separat konfiguriert.
+
 Qualitätsprüfungen:
 
 ```powershell
@@ -33,11 +44,15 @@ muss zusammen mit Änderungen an `package.json` versioniert werden.
 
 ```text
 src/
-├── app/              App-Komposition und dauerhaftes Layout
-├── features/         Benutzerfunktionen wie Home und Aufnahme
-├── infrastructure/   Adapter für Browser- und spätere externe APIs
-├── shared/           gemeinsam verwendete Styles und UI-Bausteine
-└── test/             gemeinsame Testkonfiguration
+├── app/                    App-Komposition und dauerhaftes Layout
+├── features/               Benutzerfunktionen und ihre Schnittstellen
+│   ├── recording/          Aufnahmeablauf und AudioRecorder-Port
+│   └── system/             Zustandsprüfung und HealthClient-Port
+├── infrastructure/         technische Adapter
+│   ├── audio/              Browser-MediaRecorder-Adapter
+│   └── http/               Fetch-Adapter für die lokale Python-API
+├── shared/                 gemeinsame Styles und UI-Bausteine
+└── test/                   gemeinsame Testkonfiguration
 ```
 
 Die Abhängigkeitsrichtung lautet:
@@ -49,6 +64,10 @@ App/UI → Feature-Schnittstelle ← Browser-Adapter
 Eine Feature-Komponente greift nicht direkt auf `MediaRecorder`, Whisper oder
 Ollama zu. Browser- und Backenddetails werden hinter kleinen Schnittstellen
 gekapselt und am App-Einstieg zusammengesetzt.
+
+Der `FetchHealthClient` validiert auch erfolgreiche JSON-Antworten zur Laufzeit.
+TypeScript-Typen allein schützen nicht vor fehlerhaften Daten, da sie beim
+Kompilieren entfernt werden.
 
 ## Styling
 
