@@ -10,6 +10,9 @@
   --color-accent: #f06b42;
   --color-accent-contrast: #120b08;
 
+  --color-status-success: #58b784;
+  --color-status-danger: #d56969;
+
   --font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 
   --radius-small: 0.625rem;
@@ -25,6 +28,7 @@
 
   --motion-fast: 160ms;
   --motion-standard: 220ms;
+
 }
 
 :root[data-theme='light'] {
@@ -38,4 +42,7 @@
   --color-border: #d9d7d0;
   --color-accent: #f06b42;
   --color-accent-contrast: #1b0d08;
+
+  --color-status-success: #2f855a;
+  --color-status-danger: #c24141;
 }

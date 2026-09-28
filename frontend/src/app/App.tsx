@@ -3,15 +3,21 @@ import { HomePage } from '../features/home/HomePage'
 import { RecordingPage } from '../features/recording/RecordingPage'
 import type { AudioRecorder } from '../features/recording/audioRecorder'
 import { useAudioRecording } from '../features/recording/useAudioRecording'
+import { SystemStatus } from '../features/system/SystemStatus'
+import type { HealthClient } from '../features/system/healthClient'
 import { AppShell } from './AppShell'
 
 type AppScreen = 'home' | 'recording'
 
 type AppProps = {
   audioRecorder: AudioRecorder
+  healthClient: HealthClient
 }
 
-export function App({ audioRecorder }: AppProps) {
+export function App({
+  audioRecorder,
+  healthClient,
+}: AppProps) {
   const [screen, setScreen] = useState<AppScreen>('home')
   const [pendingRecording, setPendingRecording] =
     useState<Blob | null>(null)
@@ -44,7 +50,9 @@ export function App({ audioRecorder }: AppProps) {
   }
 
   return (
-    <AppShell>
+    <AppShell
+      sidebarStatus={<SystemStatus healthClient={healthClient} />}
+    >
       {screen === 'home' ? (
         <HomePage
           onStartMeeting={handleStartMeeting}

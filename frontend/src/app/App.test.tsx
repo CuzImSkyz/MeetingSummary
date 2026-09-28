@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { AudioRecorder } from '../features/recording/audioRecorder'
+import type { HealthClient } from '../features/system/healthClient'
 import { App } from './App'
 
 describe('App recording flow', () => {
@@ -15,9 +16,18 @@ describe('App recording flow', () => {
       stop: vi.fn().mockResolvedValue(audioBlob),
     }
 
+    const healthClient: HealthClient = {
+      check: vi.fn().mockResolvedValue(undefined),
+    }
+
     const user = userEvent.setup()
 
-    render(<App audioRecorder={recorder} />)
+    render(
+      <App
+        audioRecorder={recorder}
+        healthClient={healthClient}
+      />,
+    )
 
     await user.click(
       screen.getByRole('button', {
@@ -40,8 +50,10 @@ describe('App recording flow', () => {
     )
 
     expect(recorder.stop).toHaveBeenCalledOnce()
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Die Aufnahme ist bereit für die Verarbeitung.',
-    )
+    expect(
+      screen.getByText(
+        'Die Aufnahme ist bereit für die Verarbeitung.',
+      ),
+    ).toBeInTheDocument()
   })
 })
