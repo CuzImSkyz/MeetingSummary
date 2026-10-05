@@ -105,3 +105,52 @@ def test_build_pipeline_checks_infrastructure_before_whisper(
         "check",
         "transcriber",
     ]
+
+
+def test_build_api_runtime_wires_shared_dependencies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = AppConfig()
+    pipeline = Mock(name="pipeline")
+    store = Mock(name="store")
+    task_runner = Mock(name="task_runner")
+    job_service = Mock(name="job_service")
+
+    build_pipeline = Mock(return_value=pipeline)
+    store_factory = Mock(return_value=store)
+    task_runner_factory = Mock(return_value=task_runner)
+    job_service_factory = Mock(return_value=job_service)
+
+    monkeypatch.setattr(
+        bootstrap,
+        "build_pipeline",
+        build_pipeline,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "InMemoryProcessingJobStore",
+        store_factory,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "ThreadPoolTaskRunner",
+        task_runner_factory,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "ProcessingJobService",
+        job_service_factory,
+    )
+
+    runtime = bootstrap.build_api_runtime(config)
+
+    build_pipeline.assert_called_once_with(config)
+    store_factory.assert_called_once_with()
+    task_runner_factory.assert_called_once_with()
+    job_service_factory.assert_called_once_with(
+        processor=pipeline,
+        store=store,
+        task_runner=task_runner,
+    )
+    assert runtime.job_service is job_service
+    assert runtime.task_runner is task_runner
