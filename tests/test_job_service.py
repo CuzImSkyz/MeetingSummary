@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import Mock
+from uuid import uuid4
 
 from meeting_summary.application.job_service import (
     MeetingProcessor,
@@ -31,7 +32,7 @@ class ControlledTaskRunner:
 
     def run_next(self) -> None:
         if not self.tasks:
-            raise AssertionError("Keine Hintergrundaufgabe vorhanden")
+            raise AssertionError("Keine Hintergrundaufgabe vorhanden.")
 
         task = self.tasks.pop(0)
         task()
@@ -90,13 +91,13 @@ def test_processing_failure_preserves_last_stage() -> None:
     processor = Mock(spec=MeetingProcessor)
 
     def fail_pipeline(
-        recieved_audio_path: Path,
-        recieved_target_path: Path,
+        received_audio_path: Path,
+        received_target_path: Path,
         *,
         progress_reporter: ProgressReporter,
     ) -> Path:
-        assert recieved_audio_path == audio_path
-        assert recieved_target_path == target_path
+        assert received_audio_path == audio_path
+        assert received_target_path == target_path
 
         progress_reporter.report(
             ProcessingStage.SUMMARIZING
@@ -123,3 +124,24 @@ def test_processing_failure_preserves_last_stage() -> None:
     assert failed_job.error_message == (
         "Ollama ist nicht erreichbar."
     )
+
+
+def test_submit_uses_provided_job_id() -> None:
+    job_id = uuid4()
+    store = InMemoryProcessingJobStore()
+    task_runner = ControlledTaskRunner()
+    processor = Mock(spec=MeetingProcessor)
+    service = ProcessingJobService(
+        processor=processor,
+        store=store,
+        task_runner=task_runner,
+    )
+
+    queued_job = service.submit(
+        Path("meeting.webm"),
+        Path("meeting.pdf"),
+        job_id=job_id,
+    )
+
+    assert queued_job.job_id == job_id
+    assert store.get(job_id) == queued_job

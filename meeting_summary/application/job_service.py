@@ -52,9 +52,16 @@ class ProcessingJobService:
         self,
         audio_path: Path,
         target_path: Path,
+        *,
+        job_id: UUID | None = None,
     ) -> ProcessingJob:
+        resolved_job_id = (
+            job_id
+            if job_id is not None
+            else uuid4()
+        )
         job = ProcessingJob(
-            job_id=uuid4(),
+            job_id=resolved_job_id,
             status=ProcessingJobStatus.QUEUED,
         )
         self._store.save(job)
