@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from meeting_summary.api.routes.health import router as health_router
+from meeting_summary.api.routes.jobs import router as jobs_router
 from meeting_summary.api.runtime import ApiRuntime
 from meeting_summary.bootstrap import build_api_runtime
 from meeting_summary.config import AppConfig
@@ -32,6 +33,7 @@ def create_app(
         lifespan=lifespan,
     )
     app.include_router(health_router, prefix="/api")
+    app.include_router(jobs_router, prefix="/api")
     return app
 
 
