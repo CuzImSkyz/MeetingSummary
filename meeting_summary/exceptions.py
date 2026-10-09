@@ -31,3 +31,19 @@ class TranscriptionError(MeetingSummaryError):
 
 class PdfExportError(MeetingSummaryError):
     """Das Meeting-Protokoll konnte nicht als PDF gespeichert werden."""
+
+
+class AudioUploadError(MeetingSummaryError):
+    """Eine hochgeladene Audiodatei konnte nicht gespeichert werden."""
+
+
+class EmptyAudioUploadError(AudioUploadError):
+    """Die hochgeladene Audiodatei enthält keine Daten."""
+
+
+class AudioUploadTooLargeError(AudioUploadError):
+    """Die hochgeladene Audiodatei überschreitet das Größenlimit."""
+
+
+class UnsupportedAudioFormatError(AudioUploadError):
+    """Das angegebene Audioformat wird nicht unterstützt."""
