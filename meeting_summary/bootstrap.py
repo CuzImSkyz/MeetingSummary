@@ -5,6 +5,7 @@ from .application.job_service import ProcessingJobService
 from .config import AppConfig
 from .pipeline import MeetingPipeline
 from .services.audio_metadata import PyAvMeetingTimeResolver
+from .services.audio_upload import LocalAudioUploadStore
 from .services.infrastructure import InfrastructureChecker
 from .services.job_store import InMemoryProcessingJobStore
 from .services.ollama_client import OllamaClient
@@ -39,6 +40,10 @@ def build_api_runtime(config: AppConfig) -> ApiRuntime:
 
     pipeline = build_pipeline(config)
     store = InMemoryProcessingJobStore()
+    audio_upload_store = LocalAudioUploadStore(
+        config.api_upload_directory,
+        max_bytes=config.api_max_upload_bytes,
+    )
     task_runner = ThreadPoolTaskRunner()
 
     job_service = ProcessingJobService(
@@ -49,5 +54,6 @@ def build_api_runtime(config: AppConfig) -> ApiRuntime:
 
     return ApiRuntime(
         job_service=job_service,
+        audio_upload_store=audio_upload_store,
         task_runner=task_runner,
     )

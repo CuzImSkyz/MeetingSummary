@@ -113,11 +113,15 @@ def test_build_api_runtime_wires_shared_dependencies(
     config = AppConfig()
     pipeline = Mock(name="pipeline")
     store = Mock(name="store")
+    audio_upload_store = Mock(name="audio_upload_store")
     task_runner = Mock(name="task_runner")
     job_service = Mock(name="job_service")
 
     build_pipeline = Mock(return_value=pipeline)
     store_factory = Mock(return_value=store)
+    audio_upload_store_factory = Mock(
+        return_value=audio_upload_store
+    )
     task_runner_factory = Mock(return_value=task_runner)
     job_service_factory = Mock(return_value=job_service)
 
@@ -130,6 +134,11 @@ def test_build_api_runtime_wires_shared_dependencies(
         bootstrap,
         "InMemoryProcessingJobStore",
         store_factory,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "LocalAudioUploadStore",
+        audio_upload_store_factory,
     )
     monkeypatch.setattr(
         bootstrap,
@@ -146,6 +155,10 @@ def test_build_api_runtime_wires_shared_dependencies(
 
     build_pipeline.assert_called_once_with(config)
     store_factory.assert_called_once_with()
+    audio_upload_store_factory.assert_called_once_with(
+        config.api_upload_directory,
+        max_bytes=config.api_max_upload_bytes,
+    )
     task_runner_factory.assert_called_once_with()
     job_service_factory.assert_called_once_with(
         processor=pipeline,
@@ -153,4 +166,5 @@ def test_build_api_runtime_wires_shared_dependencies(
         task_runner=task_runner,
     )
     assert runtime.job_service is job_service
+    assert runtime.audio_upload_store is audio_upload_store
     assert runtime.task_runner is task_runner

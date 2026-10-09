@@ -1,6 +1,7 @@
 """Zentrale Anwendungskonfiguration."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,3 +14,6 @@ class AppConfig:
     ollama_model: str = "llama3:8b-instruct-q4_K_M"
     ollama_status_timeout_seconds: float = 5.0
     ollama_generation_timeout_seconds: float = 600.0
+    api_upload_directory: Path = Path("local-data/uploads")
+    api_result_directory: Path = Path("local-data/results")
+    api_max_upload_bytes: int = 512 * 1024 * 1024
