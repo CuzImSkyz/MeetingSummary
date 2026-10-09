@@ -1,5 +1,6 @@
 """Tests für den Lebenszyklus der API-Abhängigkeiten."""
 
+from pathlib import Path
 from unittest.mock import Mock
 
 from meeting_summary.application.job_service import ProcessingJobService
@@ -16,6 +17,7 @@ def test_shutdown_closes_task_runner() -> None:
     runtime = ApiRuntime(
         job_service=job_service,
         audio_upload_store=audio_upload_store,
+        result_directory=Path("results"),
         task_runner=task_runner,
     )
 

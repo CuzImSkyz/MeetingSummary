@@ -26,6 +26,7 @@ def test_build_pipeline_checks_infrastructure_before_whisper(
     summarizer = Mock(name="summarizer")
     pdf_exporter = Mock(name="pdf_exporter")
     pipeline = Mock(name="pipeline")
+
     def create_transcriber(_: AppConfig) -> Mock:
         events.append("transcriber")
         return transcriber
@@ -168,3 +169,4 @@ def test_build_api_runtime_wires_shared_dependencies(
     assert runtime.job_service is job_service
     assert runtime.audio_upload_store is audio_upload_store
     assert runtime.task_runner is task_runner
+    assert runtime.result_directory == config.api_result_directory

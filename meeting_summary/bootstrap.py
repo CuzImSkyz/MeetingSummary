@@ -55,5 +55,6 @@ def build_api_runtime(config: AppConfig) -> ApiRuntime:
     return ApiRuntime(
         job_service=job_service,
         audio_upload_store=audio_upload_store,
+        result_directory=config.api_result_directory,
         task_runner=task_runner,
     )

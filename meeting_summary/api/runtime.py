@@ -1,6 +1,7 @@
 """Lebenszyklus der API-Anwendung."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from ..application.job_service import ProcessingJobService
 from ..services.audio_upload import LocalAudioUploadStore
@@ -13,6 +14,7 @@ class ApiRuntime:
 
     job_service: ProcessingJobService
     audio_upload_store: LocalAudioUploadStore
+    result_directory: Path
     task_runner: ThreadPoolTaskRunner
 
     def shutdown(self) -> None:
